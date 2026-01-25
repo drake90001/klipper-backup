@@ -1,0 +1,507 @@
+[include mainsail.cfg]
+[exclude_object]
+[include fluidd.cfg]
+#[include sample-bigtreetech-lis2dw-v1.0.cfg]
+[include mainsail.cfg]
+#[include TEST_SPEED.cfg]
+[include timelapse.cfg]
+#[include macros.cfg] 
+[include KAMP_Settings.cfg]
+[include moonraker_obico_macros.cfg]
+[include shell_command.cfg]
+#[include strayr-k-macros/common.cfg] 
+#[save_variables]
+#set this filename and path to somewhere convenient. Assumes your config lives in ~/klipper_config, it might be in ~/ or elsewhere
+#filename: ~/printer_data/config/printer_variables.cfg
+
+#[include strayr-k-macros/setup_macros.cfg] # this includes start print, cancel print etc, intended for bedslingers, if you need changes, copy it to your config folder and include your local version instead.
+#[include strayr-k-macros/mechanical_level_tmc2209.cfg] # provides G34 gantry level. Read before use. 
+#[include strayr-k-macros/idle_timeout.cfg] # use on printers with a z that falls when unpowered
+#[include strayr-k-macros/extrusion_test.cfg] # contains some macros to calibrate flow
+#[include strayr-k-macros/bed_offset.cfg] # read and understand this
+#[include strayr-k-macros/extrusion_test.cfg] # totally optionalbeeper.cfg] # requires beeper pin setting
+#[include beeper.cfg] # requires beeper pin setting
+#[include save_variables.cfg] # lots of printer specific settings.
+
+[input_shaper]
+shaper_type_x = mzv
+shaper_freq_x = 52.6
+shaper_type_y = mzv
+shaper_freq_y = 34.2
+
+
+[printer]
+kinematics: cartesian
+max_z_velocity: 5
+max_z_accel: 100
+max_velocity:150
+max_accel:2900
+minimum_cruise_ratio: 0.0
+#   Most moves will accelerate to a cruising speed, travel at that
+#   cruising speed, and then decelerate. However, some moves that
+#   travel a short distance could nominally accelerate and then
+#   immediately decelerate. This option reduces the top speed of these
+#   moves to ensure there is always a minimum distance traveled at a
+#   cruising speed. That is, it enforces a minimum distance traveled
+#   at cruising speed relative to the total distance traveled. It is
+#   intended to reduce the top speed of short zigzag moves (and thus
+#   reduce printer vibration from these moves). For example, a
+#   minimum_cruise_ratio of 0.5 would ensure that a standalone 1.5mm
+#   move would have a minimum cruising distance of 0.75mm. Specify a
+#   ratio of 0.0 to disable this feature (there would be no minimum
+#   cruising distance enforced between acceleration and deceleration).
+#   The value specified here may be changed at runtime using the
+#   SET_VELOCITY_LIMIT command. The default is 0.5.
+square_corner_velocity: 5
+
+[auto_speed]
+axis: x, y  ; One or multiple of `x`, `y`, `diag_x`, `diag_y`, `z`
+margin: 100            ; How far away from your axes to perform movements
+max_missed: 1.0       ; Maximum full steps that can be missed
+endstop_samples: 3    ; How many endstop samples to take for endstop variance
+accel_min: 2000.0     ; Minimum acceleration test may try
+accel_max: 10000.0    ; Maximum acceleration test may try
+#accel_accu: 0.05      ; Keep binary searching until the result is within this percentage
+velocity_min: 50.0    ; Minimum velocity test may try
+velocity_max: 200.0  ; Maximum velocity test may try
+#velocity_accu: 0.05   ; Keep binary searching until the result is within this percentage
+#derate: 0.8           ; Derate discovered results by this amount
+#validate_margin: Unset      ; Margin for VALIDATE, Defaults to margin
+#validate_inner_margin: 20.0 ; Margin for VALIDATE inner pattern
+#validate_iterations: 50     ; Perform VALIDATE pattern this many times
+#results_dir: ~/printer_data/config ; Destination directory for graphs
+
+[bltouch]
+sensor_pin: ^P0.10 #Remove ^ if print head crashes into bed, the ^ is for the CR touch a bl touch should work without.
+#sensor_pin: P1.27
+control_pin: P2.0
+#probe_with_touch_mode: true
+#pin_up_touch_mode_reports_triggered: False
+#x_offset: -30 ;if mounted on stock sprite side
+#y_offset: -40 ;if mounted on stock sprite side
+#x_offset: -46.8 ;if mounted on 5015 front fan duct
+#y_offset: -40.5 ;if mounted on 5015 side duct
+x_offset: 0 ;if mounted on 5015 front fan duct
+y_offset: -56 ;-55.15 if mounted on 5015 front fan duct
+#z_offset: 0.0
+stow_on_each_sample: false
+speed: 25
+samples: 3
+sample_retract_dist: 5 # Can be set lower, example 2.5 depending on height of bltouch from bed
+lift_speed: 50
+samples_tolerance_retries: 3
+
+[temperature_sensor raspberry_pi]
+sensor_type: temperature_host
+min_temp: 10
+max_temp: 100
+
+[safe_z_home]
+home_xy_position: 115,171 # Change coordinates to the center of your print bed
+speed: 100
+z_hop: 10              # Move up 10mm
+z_hop_speed: 25
+
+[bed_mesh]
+speed: 50
+#   The speed (in mm/s) of non-probing moves during the calibration.
+#   The default is 50.
+horizontal_move_z: 5
+#   The height (in mm) that the head should be commanded to move to
+#   just prior to starting a probe operation. The default is 5.
+#mesh_radius:
+#   Defines the radius of the mesh to probe for round beds. Note that
+#   the radius is relative to the coordinate specified by the
+#   mesh_origin option. This parameter must be provided for round beds
+#   and omitted for rectangular beds.
+#mesh_origin:
+#   Defines the center X, Y coordinate of the mesh for round beds. This
+#   coordinate is relative to the probe's location. It may be useful
+#   to adjust the mesh_origin in an effort to maximize the size of the
+#   mesh radius. Default is 0, 0. This parameter must be omitted for
+#   rectangular beds.
+mesh_min:0,14
+#   Defines the minimum X, Y coordinate of the mesh for rectangular
+#   beds. This coordinate is relative to the probe's location. This
+#   will be the first point probed, nearest to the origin. This
+#   parameter must be provided for rectangular beds.
+mesh_max:225,184
+#   Defines the maximum X, Y coordinate of the mesh for rectangular
+#   beds. Adheres to the same principle as mesh_min, however this will
+#   be the furthest point probed from the bed's origin. This parameter
+#   must be provided for rectangular beds.
+probe_count: 4,3
+#   For rectangular beds, this is a comma separate pair of integer
+#   values X, Y defining the number of points to probe along each
+#   axis. A single value is also valid, in which case that value will
+#   be applied to both axes. Default is 3, 3.
+#round_probe_count: 5
+#   For round beds, this integer value defines the maximum number of
+#   points to probe along each axis. This value must be an odd number.
+#   Default is 5.
+fade_start: 1
+#   The gcode z position in which to start phasing out z-adjustment
+#   when fade is enabled. Default is 1.0.
+fade_end: 0
+#   The gcode z position in which phasing out completes. When set to a
+#   value below fade_start, fade is disabled. It should be noted that
+#   fade may add unwanted scaling along the z-axis of a print. If a
+#   user wishes to enable fade, a value of 10.0 is recommended.
+#   Default is 0.0, which disables fade.
+fade_target: .01
+#   The z position in which fade should converge. When this value is
+#   set to a non-zero value it must be within the range of z-values in
+#   the mesh. Users that wish to converge to the z homing position
+#   should set this to 0. Default is the average z value of the mesh.
+split_delta_z: .025
+#   The amount of Z difference (in mm) along a move that will trigger
+#   a split. Default is .025.
+move_check_distance: 5.0
+#   The distance (in mm) along a move to check for split_delta_z.
+#   This is also the minimum length that a move can be split. Default
+#   is 5.0.
+mesh_pps: 4, 3
+#   A comma separated pair of integers X, Y defining the number of
+#   points per segment to interpolate in the mesh along each axis. A
+#   "segment" can be defined as the space between each probed point.
+#   The user may enter a single value which will be applied to both
+#   axes. Default is 2, 2.
+algorithm: lagrange
+#   The interpolation algorithm to use. May be either "lagrange" or
+#   "bicubic". This option will not affect 3x3 grids, which are forced
+#   to use lagrange sampling. Default is lagrange.
+#bicubic_tension: .1
+#   When using the bicubic algorithm the tension parameter above may
+#   be applied to change the amount of slope interpolated. Larger
+#   numbers will increase the amount of slope, which results in more
+#   curvature in the mesh. Default is .2.
+zero_reference_position: 115,115
+#   An optional X,Y coordinate that specifies the location on the bed
+#   where Z = 0.  When this option is specified the mesh will be offset
+#   so that zero Z adjustment occurs at this location.  The default is
+#   no zero reference.
+#faulty_region_1_min:
+#faulty_region_1_max:
+#   Optional points that define a faulty region.  See docs/Bed_Mesh.md
+#   for details on faulty regions.  Up to 99 faulty regions may be added.
+#   By default no faulty regions are set.
+adaptive_margin: 25
+#   An optional margin (in mm) to be added around the bed area used by
+#   the defined print objects when generating an adaptive mesh.
+#scan_overshoot:
+#  The maximum amount of travel (in mm) available outside of the mesh.
+#  For rectangular beds this applies to travel on the X axis, and for round beds
+#  it applies to the entire radius.  The tool must be able to travel the amount
+#  specified outside of the mesh.  This value is used to optimize the travel
+#  path when performing a "rapid scan".  The minimum value that may be specified
+#  is 1.  The default is no overshoot.
+
+[display_status]
+
+[pause_resume]
+
+[stepper_x]
+step_pin: P2.2
+dir_pin: !P2.6
+enable_pin: !P2.1
+microsteps: 16
+rotation_distance: 40
+endstop_pin: tmc2209_stepper_x:virtual_endstop
+homing_retract_dist: 0
+position_endstop: 0
+position_max: 235
+homing_speed: 50
+
+[tmc2209 stepper_x]
+uart_pin: P1.10
+diag_pin: P1.29
+driver_SGTHRS: 100
+run_current: 0.580
+stealthchop_threshold: 999999
+
+[stepper_y]
+step_pin: P0.19
+dir_pin: !P0.20
+enable_pin: !P2.8
+microsteps: 16
+rotation_distance: 40
+endstop_pin: tmc2209_stepper_y:virtual_endstop
+position_endstop: 0
+position_min: -10
+position_max: 240
+homing_speed: 50
+
+[tmc2209 stepper_y]
+uart_pin: P1.9
+diag_pin: P1.28
+driver_SGTHRS: 100
+run_current: 0.620
+hold_current: 0.650
+stealthchop_threshold: 999999
+
+[stepper_z]
+step_pin: P0.22
+dir_pin: P2.11
+enable_pin: !P0.21
+microsteps: 16
+rotation_distance: 8
+position_endstop: 0.0
+endstop_pin: ^P1.27
+position_max: 250
+position_min: -6
+homing_speed: 25
+
+[tmc2209 stepper_z]
+uart_pin: P1.8
+#diag_pin: P1.27
+run_current: 0.580
+stealthchop_threshold: 999999
+
+[extruder]
+max_extrude_only_distance: 201
+step_pin: P2.13
+dir_pin: !P0.11
+enable_pin: !P2.12
+microsteps: 16
+gear_ratio: 42:12
+rotation_distance: 26.67544968 ;26.35914
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+heater_pin: P2.7
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: P0.23
+control = pid
+pid_kp = 21.168
+pid_ki = 1.238
+pid_kd = 90.494
+min_temp: 0
+max_temp: 300 # Set to 300 for Sprite Pro Extruder
+min_extrude_temp: 175
+pressure_advance: 0.08
+pressure_advance_smooth_time: 0.2
+max_extrude_cross_section: 45
+
+[tmc2209 extruder]
+uart_pin:  P1.4
+#tx_pin: PC10
+#uart_address: 3
+run_current: 0.6750
+hold_current: 0.500
+stealthchop_threshold: 999999
+
+[firmware_retraction]
+retract_length: .4
+#   The length of filament (in mm) to retract when G10 is activated,
+#   and to unretract when G11 is activated (but see
+#   unretract_extra_length below). The default is 0 mm.
+retract_speed: 65
+#   The speed of retraction, in mm/s. The default is 20 mm/s.
+unretract_extra_length: .0
+#   The length (in mm) of *additional* filament to add when
+#   unretracting.
+unretract_speed: 45
+#   The speed of unretraction, in mm/s. The default is 10 mm/s.
+
+[heater_bed]
+heater_pin: P2.5
+sensor_type: ATC Semitec 104GT-2
+sensor_pin: P0.25
+control = pid
+pid_kp = 72.913
+pid_ki = 1.434
+pid_kd = 926.905
+min_temp: 0
+max_temp: 130
+
+#[heater_fan controller_fan]
+#pin: PB15
+#heater: heater_bed
+#heater_temp: 50.0
+
+#[heater_fan heatbreak_cooling_fan]
+#pin: PC6
+#heater: extruder
+#heater_temp: 45.0
+
+
+[fan]
+pin: P2.3
+
+[mcu]
+serial: /dev/serial/by-id/usb-Klipper_lpc1769_20C0000DE284D795B66C4762C52000F5-if00
+restart_method: command
+baud: 250000
+
+# [mpu9250 hotend]
+# i2c_mcu: btt_lis2dw
+# i2c_bus: i2c.1
+# i2c_address: 104 This MPU has pin AD0 pulled low
+
+# [mpu9250 bed]
+# i2c_mcu: btt_lis2dw
+# i2c_bus: i2c.1
+# i2c_address: 105 # This MPU has pin AD0 pulled high
+
+# [resonance_tester]
+# # Assuming the typical setup of the bed slinger printer
+# accel_chip_x: btt_lis2dw hotend
+# accel_chip_y: btt_lis2dw bed
+# probe_points:
+#    115, 115, 25  # an example
+   
+[screws_tilt_adjust]
+screw4: 30, 100 
+screw4_name: front left screw
+screw3: 197, 100
+screw3_name: front right screw
+screw2: 197, 240
+screw2_name: rear right screw
+screw1: 30, 240  #screw coordinates need to be measure for YOUR specific printer
+screw1_name: rear left screw
+horizontal_move_z: 10
+speed: 150  #speed of travel moves between screws
+screw_thread: CW-M4
+
+#screws below go front to back vs back to front
+#screw1: 76, 32
+#screw1_name: Front left
+#screw2: 246, 32
+#screw2_name: Front right
+#screw3: 246, 202
+#screw3_name: Back right
+#screw4: 76, 202
+#screw4_name: Back left
+#screw_thread: CW-M4
+#horizontal_move_z: 10
+
+[filament_switch_sensor my_sensor]
+pause_on_runout: True
+#   When set to True, a PAUSE will execute immediately after a runout
+#   is detected. Note that if pause_on_runout is False and the
+#   runout_gcode is omitted then runout detection is disabled. Default
+#   is True.
+#runout_gcode:
+#   A list of G-Code commands to execute after a filament runout is
+#   detected. See docs/Command_Templates.md for G-Code format. If
+#   pause_on_runout is set to True this G-Code will run after the
+#   PAUSE is complete. The default is not to run any G-Code commands.
+#insert_gcode:
+#   A list of G-Code commands to execute after a filament insert is
+#   detected. See docs/Command_Templates.md for G-Code format. The
+#   default is not to run any G-Code commands, which disables insert
+#   detection.
+event_delay: 3.0
+#   The minimum amount of time in seconds to delay between events.
+#   Events triggered during this time period will be silently
+#   ignored. The default is 3 seconds.
+pause_delay: 0.5
+#   The amount of time to delay, in seconds, between the pause command
+#   dispatch and execution of the runout_gcode. It may be useful to
+#   increase this delay if OctoPrint exhibits strange pause behavior.
+#   Default is 0.5 seconds.
+#debounce_delay:
+#   A period of time in seconds to debounce events prior to running the
+#   switch gcode. The switch must he held in a single state for at least
+#   this long to activate. If the switch is toggled on/off during this delay,
+#   the event is ignored. Default is 0.
+switch_pin: P1.26
+#   The pin on which the switch is connected. This parameter must be
+#   provided.
+
+
+######################################################################
+#  BigTreeTech TFT TouchScreen emulated 12864 mode
+######################################################################
+
+#[display]
+#lcd_type: emulated_st7920
+#spi_software_miso_pin: PD8 # status led, Virtual MISO
+#spi_software_mosi_pin: PD6
+#spi_software_sclk_pin: PB9
+#en_pin: PB8
+#encoder_pins: ^PA10, ^PA9
+#click_pin: ^!PA15
+
+#[static_digital_output tmc_standby_pins]
+#pins: !P3.26, !P3.25, !P1.18, !P1.19, !P2.13
+
+[board_pins]
+aliases:
+    # EXP1 header
+    EXP1_1=P1.30, EXP1_3=P1.18, EXP1_5=P1.20, EXP1_7=P1.22, EXP1_9=<GND>,
+    EXP1_2=P0.28, EXP1_4=P1.19, EXP1_6=P1.21, EXP1_8=P1.23, EXP1_10=<5V>,
+    # EXP2 header
+    EXP2_1=P0.17, EXP2_3=P3.26, EXP2_5=P3.25, EXP2_7=P1.31, EXP2_9=<GND>,
+    EXP2_2=P0.15, EXP2_4=P0.16, EXP2_6=P0.18, EXP2_8=<RST>, EXP2_10=<NC>
+    # Pins EXP2_1, EXP2_6, EXP2_2 are also MISO, MOSI, SCK of bus "ssp0"
+
+[virtual_sdcard]
+path: ~/printer_data/gcodes
+on_error_gcode:
+    TURN_OFF_HEATERS
+    CANCEL_PRINT_BASE
+    RESPOND TYPE=echo MSG="PRINT STOPPED WITH ERROR!"
+    G91 ;Relative positionning
+    G1 E-2 F500 ;Retract a bit
+    G1 E-2 Z0.2 F200 ;Retract and raise Z
+    G1 Z1 ;Raise Z more
+    M106 S0 ;Turn-off fan
+    M104 S0 ;Turn-off hotend
+    M140 S0 ;Turn-off bed
+    G90
+    G1 X10 Y290 F6000
+    M84 X Y E ;Disable all steppers but Z
+
+#*# <---------------------- SAVE_CONFIG ---------------------->
+#*# DO NOT EDIT THIS BLOCK OR BELOW. The contents are auto-generated.
+#*#
+#*# [bltouch]
+#*# z_offset = 1.278
+#*#
+#*# [extruder]
+#*# control = pid
+#*# pid_kp = 22.968
+#*# pid_ki = 1.801
+#*# pid_kd = 73.210
+#*#
+#*# [heater_bed]
+#*# control = pid
+#*# pid_kp = 75.292
+#*# pid_ki = 1.761
+#*# pid_kd = 804.684
+#*#
+#*# [input_shaper]
+#*#
+#*# [bed_mesh Adaptive]
+#*# version = 1
+#*# points =
+#*# 	-0.093291, -0.096624, -0.094124
+#*# 	0.043376, -0.010791, 0.004209
+#*# 	0.139209, 0.087543, 0.098376
+#*# min_x = 10.0
+#*# max_x = 195.0
+#*# min_y = 10.0
+#*# max_y = 195.0
+#*# x_count = 3
+#*# y_count = 3
+#*# mesh_x_pps = 4
+#*# mesh_y_pps = 4
+#*# algo = lagrange
+#*# tension = 0.1
+#*#
+#*# [bed_mesh default]
+#*# version = 1
+#*# points =
+#*# 	-0.029652, -0.007985, 0.026181, 0.001181
+#*# 	-0.010485, -0.028819, 0.010348, 0.033681
+#*# 	0.032015, 0.020348, 0.055348, 0.059515
+#*# x_count = 4
+#*# y_count = 3
+#*# mesh_x_pps = 4
+#*# mesh_y_pps = 3
+#*# algo = lagrange
+#*# tension = 0.2
+#*# min_x = 10.0
+#*# max_x = 194.98
+#*# min_y = 10.0
+#*# max_y = 195.0
